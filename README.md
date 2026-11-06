@@ -1,6 +1,8 @@
-# DPC-Bench v0.1
+# DPC-Bench v0.2
 
 **Dataset Physical-Consistency Benchmark** — paired clean/corrupted detection benchmark for physical-consistency defects in AI/robotics datasets, with three-caliber severity labeling (L1 data defect / L2 physical violation / L3 malformed) and a false-positive-on-clean metric reported separately.
+
+**v0.2 adds a real-data family**: `vehicle_real` — 2,967 records derived from NGSIM I-80 (USDOT public domain), clean base verified against plausibility envelopes, documented perturbations injected at known indices.
 
 A companion public artifact of **Q/QZKJ 001—2026**, *Dataset Physical-Consistency Quality Evaluation Specification* (enterprise standard, draft v0.9).
 
