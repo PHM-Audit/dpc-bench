@@ -1,4 +1,4 @@
-# DPC-Bench v0.1 — Specification
+# DPC-Bench v0.2 — Specification
 
 ## 1. Label taxonomy (per Q/QZKJ 001-2026, three-caliber judgment)
 
@@ -19,6 +19,7 @@
 | frame_drop | 1200 | 132 | {rid, frame_idx} | 11% frames removed silently (sparse, mostly single-frame) |
 | kinematic_teleport | 1200 | 96 | {rid, ts, pos[3]} | 8% teleports; ~half borderline (inside naive threshold, outside 99.5-pct envelope ×1.2) |
 | mixed_l3 | 1200 | 84 | {rid, ts, speed} | 7% None/NaN/"N/A"/truncated |
+| vehicle_real (v0.2, real base) | 2967 | 320 | {rid, ts, frame_idx, vel, acc, pos[2]} | base=NGSIM I-80 rows (USDOT public domain, sha256 93c547a9…); injections: ~4% teleports (half borderline vs 99.9-pct envelope ×1.1), ~5% km/h-as-m/s unit flips (vel×2.237), ~2% L3; 2 real frame holes kept as L1; seed=20261107 |
 
 ## 3. Files
 
@@ -59,4 +60,4 @@ Every record of every family must receive exactly one label.
 - One row per method version; PR or issue with predictions JSON
 - State method family (rule-based / statistics / learned) in one sentence
 - Self-reported runtime; spot-checks may be re-run by maintainers
-- Scores are frozen to DPC-Bench vX.Y (v0.1 = seed 20261106); v0.2 resets the board
+- Scores are frozen to DPC-Bench vX.Y (v0.2 = synthetic seed 20261106 + vehicle_real seed 20261107). v0.2 resets the board.
