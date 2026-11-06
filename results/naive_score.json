@@ -1,0 +1,57 @@
+{
+ "benchmark": "DPC-Bench v0.1",
+ "method": "naive_threshold_v0",
+ "records_scored": 7200,
+ "missing_predictions": 0,
+ "headline_macro_f1": 0.8096,
+ "false_positive_rate_on_clean": 0.0,
+ "per_class": {
+  "clean": {
+   "precision": 0.9366,
+   "recall": 1.0,
+   "f1": 0.9673
+  },
+  "L1": {
+   "precision": 1.0,
+   "recall": 0.4754,
+   "f1": 0.6444
+  },
+  "L2": {
+   "precision": 1.0,
+   "recall": 0.4565,
+   "f1": 0.6269
+  },
+  "L3": {
+   "precision": 1.0,
+   "recall": 1.0,
+   "f1": 1.0
+  }
+ },
+ "confusion_gold_row_pred_col": {
+  "clean": {
+   "clean": 6312,
+   "L1": 0,
+   "L2": 0,
+   "L3": 0
+  },
+  "L1": {
+   "clean": 277,
+   "L1": 251,
+   "L2": 0,
+   "L3": 0
+  },
+  "L2": {
+   "clean": 150,
+   "L1": 0,
+   "L2": 126,
+   "L3": 0
+  },
+  "L3": {
+   "clean": 0,
+   "L1": 0,
+   "L2": 0,
+   "L3": 84
+  }
+ },
+ "runtime_s": null
+}
