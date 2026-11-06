@@ -81,8 +81,8 @@ def gen_time_align(rng, n, out_dir, gt):
     t = 0.0
     prev_t = None
     for i in range(n):
-        if i in d_ids:
-            # duplicate previous timestamp
+        if i in d_ids and prev_t is not None:
+            # duplicate previous timestamp (i=0 has no predecessor -> falls through)
             labels[str(i)] = {"label":"L1","family":"time_align","note":"duplicate timestamp"}
             recs.append({"rid":i,"ts":prev_t})
             continue
