@@ -86,6 +86,31 @@ def main():
         ok = isinstance(v, (int, float)) and not isinstance(v, bool) and v == v  # NaN guard
         P["mixed_l3"][str(r["rid"])] = "clean" if ok else "L3"
 
+    # vehicle_real: envelope + unit band check + type check
+    recs = load(os.path.join(data_dir, "vehicle_real.jsonl"))
+    envl = []
+    for j in range(1, len(recs)):
+        dt = (recs[j]["ts"] - recs[j-1]["ts"]) / 1000.0
+        if dt <= 0: continue
+        d = ((recs[j]["pos"][0]-recs[j-1]["pos"][0])**2 + (recs[j]["pos"][1]-recs[j-1]["pos"][1])**2) ** 0.5
+        envl.append(d/dt)
+    envl.sort()
+    envelope = envl[int(len(envl)*0.999)] if envl else 50.0
+    P["vehicle_real"] = {}
+    for j, r in enumerate(recs):
+        v = r.get("vel")
+        if not (isinstance(v, (int, float)) and not isinstance(v, bool)):
+            P["vehicle_real"][str(r["rid"])] = "L3"; continue
+        if not (0.0 <= v <= 40.0):
+            P["vehicle_real"][str(r["rid"])] = "L1"; continue
+        if j > 0:
+            dt = (r["ts"] - recs[j-1]["ts"]) / 1000.0
+            if dt > 0:
+                d = ((r["pos"][0]-recs[j-1]["pos"][0])**2 + (r["pos"][1]-recs[j-1]["pos"][1])**2) ** 0.5
+                if d/dt > envelope * 1.1:
+                    P["vehicle_real"][str(r["rid"])] = "L2"; continue
+        P["vehicle_real"][str(r["rid"])] = "clean"
+
     out = {"method": P["method"], "predictions": P}
     path = os.path.join(os.path.dirname(__file__), "..", "results", "pred_phm_reference.json")
     json.dump(out, open(path, "w", encoding="utf-8"))
