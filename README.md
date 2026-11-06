@@ -1,0 +1,126 @@
+# DPC-Bench v0.1
+
+**Dataset Physical-Consistency Benchmark** — paired clean/corrupted detection benchmark for physical-consistency defects in AI/robotics datasets, with three-caliber severity labeling (L1 data defect / L2 physical violation / L3 malformed) and a false-positive-on-clean metric reported separately.
+
+A companion public artifact of **Q/QZKJ 001—2026**, *Dataset Physical-Consistency Quality Evaluation Specification* (enterprise standard, draft v0.9).
+
+- License: MIT (code + data, generated deterministically, seed=20261106)
+- Maintainer: PHM-Audit (https://github.com/PHM-Audit) · Contact: 14788045967@163.com
+
+---
+
+## Why this benchmark exists
+
+Industry standards for AI/robotics data quality — e.g. YD/T 6771-2026, the draft Chinese
+national specification on embodied-AI data quality, and ISO/WD 26264-1 (working draft) —
+define quality **indicators** and requirements. Within the scope of our search
+(2026-11-06; search terms: "physical consistency dataset benchmark", "AI generated data
+quality standard", and related, across ISO/IEC, GB/YD standards and GitHub), we are not
+aware of a paired, reproducible, executable benchmark that measures whether an evaluator
+can **detect, classify, and act on** physical-consistency defects without flagging clean
+records. If such a benchmark exists, we will happily cite it — open an issue.
+
+DPC-Bench v0.1 provides one, with six task families, each **modeled on a real defect
+documented in public**. Two source types are distinguished throughout:
+
+- **Type A — third-party issue**: a defect reported in a vendor's public repository
+- **Type B — self-audit report**: a defect found by PHM-Audit in public data during our own audits (report links under github.com/PHM-Audit)
+
+| Task family | Severity | Modeled on real-world defect | Source (type) |
+|---|---|---|---|
+| `quat_norm` | L2 | non-unit quaternions (ee_base norm max **1.395**, 88% frames off-unit — figures as reported in the issue) | [OpenDriveLab/AgiBot-World #164](https://github.com/OpenDriveLab/AgiBot-World/issues/164) (A); community cross-tool replication with matching figures was posted in the same thread (kittimzhe, using the open-source `elake` tool) |
+| `unit_semantics` | L1 | mixed m/s vs mph at record level (values individually plausible in either unit) | NGSIM I-80 recalculation, USDOT public data (B; our 2025-10 audit finding) |
+| `time_align` | L1 | duplicate/backward timestamps; >10× nominal-rate gaps; ±7 ms tactile-encoder semantics undefined | [px-DataCollection/px_omnisharing_dataprocess_kit #3](https://github.com/px-DataCollection/px_omnisharing_dataprocess_kit/issues) (A; PaXini tactile-encoder pair) |
+| `frame_drop` | L1 | silent frame loss (67,723 frames recovered across 18 flights) | DJI flight-log parsing audit (B; our public report, 2026-10) |
+| `kinematic_teleport` | L2 | position jumps violating the kinematic envelope | UZH-FPV + PX4 flight-review public data (B; our drone-line audit, 2026-10) |
+| `mixed_l3` | L3 | `None`/malformed records silently ingested; dead normalization code | [OpenGalaxea/GalaxeaLeRobotToolkit #5](https://github.com/OpenGalaxea/GalaxeaLeRobotToolkit/issues/5) (A) |
+
+Families cite vendor issues strictly as **defect-mode prototypes**; they imply no
+overall assessment of any vendor's product quality.
+
+## What participants do
+
+Given the six JSONL streams in `data/`, produce for **every record** one of four labels:
+
+- `clean` — passes physical-consistency checks
+- `L1` — data-integrity defect (frame loss, timestamp integrity, unit semantics)
+- `L2` — physical violation (breaks a physics constraint: SO(3) norm, kinematic envelope)
+- `L3` — malformed/unparseable record
+
+Submit a predictions JSON (see `SPEC.md` §4). Scoring (`eval/evaluate.py`, stdlib-only):
+
+- **Headline: macro-F1 over the 4 classes** (`clean/L1/L2/L3`)
+- **False-positive rate on clean records** — reported separately; board constraint: FPR ≤ 0.001 (the v0.1 reference rows achieve 0.0)
+- Per-class precision/recall/F1 + full confusion matrix + runtime
+
+## Current board (v0.1, seed=20261106, 7,200 records, 888 defective)
+
+| Method | macro-F1 | FPR on clean | Notes |
+|---|---|---|---|
+| PHM reference detector v0 | **0.9174** | **0.0000** | cross-record statistics + physics envelope fitting |
+| naive threshold v0 | 0.8096 | 0.0000 | per-record sanity checks only |
+
+**No external submission yet** — both rows are ours, and the reference detector shares
+design lineage with the data generator (see honesty note). v0.1 leaves measurable
+headroom: the reference detector misses 100 L1 and 96 L2 records
+(`results/phm_reference_score.json`), concentrated in the hard subsets (sub-unit
+quaternions in [1.005, 1.02], low-speed km/h records inside the m/s plausibility band,
+borderline teleports inside the 99.5-percentile envelope ×1.2). Beating macro-F1 0.9174
+at FPR ≤ 0.001 is the standing open challenge.
+
+## Honesty note (read before citing)
+
+1. All data is **synthetic, generated by us** (seeded, reproducible). Generation
+   parameters were frozen before detector development; the reference detector's
+   thresholds were **not** tuned against the hard subsets (its misses above are the
+   evidence). Nevertheless, this is a **self-authored benchmark**: author near-saturation
+   is expected and is not evidence of real-world superiority. No held-out split exists in
+   v0.1; a frozen holdout is planned for v0.2.
+2. The benchmark's intended value: (a) a **standardized, executable comparison surface**
+   for a category that currently lacks one (to our knowledge, per the search scope
+   above), (b) **regression tracking** across evaluator versions, (c) families grounded
+   in documented public defects rather than arbitrary noise.
+3. Real-world generalization rests on PHM-Audit's live audits — cumulative 5.0×10⁹
+   records across 16 domains; per-domain evidence and reports are linked from
+   https://github.com/PHM-Audit . DPC-Bench is the standardized instrument, not the
+   evidence base itself.
+4. Platform inclusions noted in PHM-Audit materials (e.g. MCP Registry, marketplaces)
+   are **registrations under those platforms' own rules** — not endorsements of this
+   benchmark's quality.
+
+## How to submit
+
+```bash
+git clone https://github.com/PHM-Audit/dpc-bench
+cd dpc-bench
+python3 baselines/naive_threshold.py                      # example detector
+python3 eval/evaluate.py --pred results/pred_naive.json   # score it
+# then: write your own detector, emit the same JSON format, open a PR to results/ + leaderboard
+```
+
+Open a PR adding `results/pred_<yourmethod>.json` + a one-line board entry, or open an
+issue with the predictions JSON attached. Please include runtime and a one-paragraph
+method description. Any language is fine as long as the output format matches.
+
+## 中文说明（摘要）
+
+DPC-Bench v0.1：数据集物理一致性缺陷检测基准。6个任务族共7200条记录、888条缺陷，全部
+**以公开有据的真实缺陷为原型**——类型A为厂商公开仓库issue（智元AgiBot-World#164四元数
+未归一化、帕西尼时间戳语义未定义、星海图#5空值入库），类型B为PHM-Audit自有审计公开
+报告（NGSIM列8单位混用、大疆日志丢帧67723帧、UZH-FPV运动学越界）。按企标Q/QZKJ
+001-2026三口径标注（L1数据缺陷/L2物理违规/L3解析错误）。
+
+- 指标：四类宏F1（主榜）+ 干净记录误报率（独立呈现，榜单约束FPR≤0.001）
+- 当前：PHM参考检测器宏F1 0.9174、FPR 0.0；naive 0.8096——**尚无外部提交**，困难子集
+  留有可测提升空间（参考检测器自身漏检100条L1、96条L2）
+- 数据全部合成可复现（seed=20261106）；作者方法在自建基准上接近饱和属预期，真实泛化
+  证据另见16域5.0×10⁹条真实数据实测（报告见 github.com/PHM-Audit）
+- 提交：PR到results/或开issue附预测JSON。分类别引用厂商issue仅作缺陷模式原型，不构
+  成对任何厂商产品整体质量的评价
+
+## Roadmap
+
+- v0.2: frozen holdout split; real-world public-domain slices (NGSIM I-80 derived, USDOT public data) alongside synthetic pairs
+- v0.2: stream-level tasks (cross-record temporal coherence at window level)
+- Hosted leaderboard page; HuggingFace dataset mirror
+- Community hard-subset track: beat the reference on hard records with FPR ≤ 0.001
