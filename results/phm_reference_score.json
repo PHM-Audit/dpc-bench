@@ -1,56 +1,56 @@
 {
  "benchmark": "DPC-Bench v0.1",
  "method": "phm_reference_v0",
- "records_scored": 7200,
+ "records_scored": 10167,
  "missing_predictions": 0,
- "headline_macro_f1": 0.9174,
+ "headline_macro_f1": 0.8377,
  "false_positive_rate_on_clean": 0.0,
  "per_class": {
   "clean": {
-   "precision": 0.9699,
+   "precision": 0.9534,
    "recall": 1.0,
-   "f1": 0.9847
+   "f1": 0.9761
   },
   "L1": {
    "precision": 1.0,
-   "recall": 0.8106,
-   "f1": 0.8954
+   "recall": 0.6954,
+   "f1": 0.8203
   },
   "L2": {
    "precision": 1.0,
-   "recall": 0.6522,
-   "f1": 0.7895
+   "recall": 0.4569,
+   "f1": 0.6272
   },
   "L3": {
    "precision": 1.0,
-   "recall": 1.0,
-   "f1": 1.0
+   "recall": 0.8643,
+   "f1": 0.9272
   }
  },
  "confusion_gold_row_pred_col": {
   "clean": {
-   "clean": 6312,
+   "clean": 8960,
    "L1": 0,
    "L2": 0,
    "L3": 0
   },
   "L1": {
-   "clean": 100,
-   "L1": 428,
+   "clean": 205,
+   "L1": 468,
    "L2": 0,
    "L3": 0
   },
   "L2": {
-   "clean": 96,
+   "clean": 214,
    "L1": 0,
    "L2": 180,
    "L3": 0
   },
   "L3": {
-   "clean": 0,
+   "clean": 19,
    "L1": 0,
    "L2": 0,
-   "L3": 84
+   "L3": 121
   }
  },
  "runtime_s": null
