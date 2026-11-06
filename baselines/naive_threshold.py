@@ -4,7 +4,7 @@
 Deliberately weak: no cross-record statistics, no physics envelope fitting,
 no unit-inference. Demonstrates that DPC-Bench is not trivially saturated.
 """
-import json, os, sys
+import json, os
 
 def load(path):
     recs = []
@@ -28,28 +28,26 @@ def main():
     # unit_semantics: naive has NO cross-record view → predicts all clean (misses 100%)
     P["unit_semantics"] = {str(r["rid"]): "clean" for r in load(os.path.join(data_dir, "unit_semantics.jsonl"))}
 
-    # time_align: monotonicity + duplicates within naive window
+    # time_align: duplicate ts / backward ts / gap > 100ms
     recs = load(os.path.join(data_dir, "time_align.jsonl"))
     P["time_align"] = {}
-    prev = None
-    for r in recs:
-        t = r["ts"]
-        if prev is not None and (t <= prev or t - prev > 0.5):
-            P["time_align"][str(r["rid"])] = "L1"
-        else:
+    for j, r in enumerate(recs):
+        if j == 0:
             P["time_align"][str(r["rid"])] = "clean"
-        prev = t
+        else:
+            dt = r["ts"] - recs[j-1]["ts"]
+            P["time_align"][str(r["rid"])] = "L1" if (dt <= 0 or dt > 100) else "clean"
 
-    # frame_drop: neighbor gap on frame_idx
+    # frame_drop: frame_idx continuity
     recs = load(os.path.join(data_dir, "frame_drop.jsonl"))
     P["frame_drop"] = {}
-    for j in range(len(recs)):
-        if j > 0 and recs[j]["frame_idx"] - recs[j-1]["frame_idx"] > 1:
-            P["frame_drop"][str(recs[j]["rid"])] = "L1"
+    for j, r in enumerate(recs):
+        if j == 0:
+            P["frame_drop"][str(r["rid"])] = "clean"
         else:
-            P["frame_drop"][str(recs[j]["rid"])] = "clean"
+            P["frame_drop"][str(r["rid"])] = "L1" if r["frame_idx"] != recs[j-1]["frame_idx"] + 1 else "clean"
 
-    # kinematic_teleport: only flags gross jumps (implied speed > 100 m/s)
+    # kinematic_teleport: naive applied-speed > 100 m/s
     recs = load(os.path.join(data_dir, "kinematic_teleport.jsonl"))
     P["kinematic_teleport"] = {}
     for j in range(1, len(recs)):
@@ -66,6 +64,14 @@ def main():
         v = r.get("speed")
         ok = isinstance(v, (int, float)) and not isinstance(v, bool)
         P["mixed_l3"][str(r["rid"])] = "clean" if ok else "L3"
+
+    # vehicle_real: naive — only malformed type check (misses teleport/unit flip)
+    recs = load(os.path.join(data_dir, "vehicle_real.jsonl"))
+    P["vehicle_real"] = {}
+    for r in recs:
+        v = r.get("vel")
+        ok = isinstance(v, (int, float)) and not isinstance(v, bool)
+        P["vehicle_real"][str(r["rid"])] = "clean" if ok else "L3"
 
     preds["predictions"] = P
     out = os.path.join(os.path.dirname(__file__), "..", "results", "pred_naive.json")
