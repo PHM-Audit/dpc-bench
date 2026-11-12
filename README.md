@@ -1,4 +1,6 @@
 # DPC-Bench v0.2
+> **Using DPC-Bench?** Drop us a note (GitHub Issue on this repo, or PHM-Audit Discussions) telling us what you are building - we track downstream usage and prioritize compatibility accordingly. Please cite via [CITATION.cff](CITATION.cff).
+
 
 **Dataset Physical-Consistency Benchmark** — paired clean/corrupted detection benchmark for physical-consistency defects in AI/robotics datasets, with three-caliber severity labeling (L1 data defect / L2 physical violation / L3 malformed) and a false-positive-on-clean metric reported separately.
 
