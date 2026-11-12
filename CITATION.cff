@@ -1,0 +1,17 @@
+cff-version: 1.2.0
+message: "If you use DPC-Bench, please cite it as below. Tell us you used it - we would love to hear what you are building."
+title: "DPC-Bench: Dataset Physical-Consistency Benchmark v0.2"
+authors:
+  - name: "PHM-Audit"
+    website: "https://github.com/PHM-Audit"
+version: "0.2"
+date-released: "2026-11-01"
+license: Apache-2.0
+repository-code: "https://github.com/PHM-Audit/dpc-bench"
+keywords:
+  - dataset-quality
+  - physical-consistency
+  - benchmark
+  - robotics
+  - ai-safety
+abstract: "Paired clean/corrupted detection benchmark for physical-consistency defects in AI and robotics datasets. Three-caliber severity labeling (data defect / physical violation / malformed) with false-positive-on-clean reported separately."
